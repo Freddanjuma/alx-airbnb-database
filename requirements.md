@@ -1,123 +1,203 @@
-# Airbnb Database Entity-Relationship Diagram (ERD)
+Airbnb Clone – Database Specification & ER Diagram Requirements
 
-This document describes the database design for the **Airbnb Clone Project**.  
-It includes the key entities, their attributes, and how they are related.
-
----
-
-## 🧩 ER Diagram
-
-The diagram below illustrates how all entities are connected within the system.
-
-> 📌 **Note:** Ensure you’ve exported your ERD image from Draw.io and saved it in this folder as `airbnb_ERD.png`.
-
-![Airbnb ER Diagram](./airbnb_ERD.png)
+This document defines the **Entity-Relationship Diagram (ERD)** and database schema for the Airbnb Clone project.  
+It includes all entities, attributes, data types, constraints, and relationships forming the backbone of the backend database.
 
 ---
 
-## 🧱 Entities and Attributes
+## 🧩 Entities and Attributes
 
-### 1. **User**
-Represents the users of the platform, including guests, hosts, and admins.
+### 👤 User
 
-| Field | Type | Description |
-|-------|------|--------------|
-| user_id | UUID (PK) | Unique identifier for each user |
-| first_name | VARCHAR | User's first name |
-| last_name | VARCHAR | User's last name |
-| email | VARCHAR (unique) | User’s email address |
-| password_hash | VARCHAR | Hashed password for authentication |
-| phone_number | VARCHAR | Optional contact number |
-| role | ENUM (guest, host, admin) | Defines user role |
-| created_at | TIMESTAMP | Account creation date |
+**Description:**  
+Represents all users (guests, hosts, and admins) who interact with the system.
 
----
-
-### 2. **Property**
-Represents a rental property listed by a host.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| property_id | UUID (PK) | Unique property identifier |
-| host_id | UUID (FK → User.user_id) | Host who owns the property |
-| name | VARCHAR | Property name |
-| description | TEXT | Description of the property |
-| location | VARCHAR | Property address or area |
-| price_per_night | DECIMAL | Cost per night |
-| created_at | TIMESTAMP | Creation date |
-| updated_at | TIMESTAMP | Last updated time |
+| Field | Type | Constraints | Description |
+|--------|------|-------------|--------------|
+| `user_id` | UUID | Primary Key, Indexed | Unique user identifier |
+| `first_name` | VARCHAR | NOT NULL | User's first name |
+| `last_name` | VARCHAR | NOT NULL | User's last name |
+| `email` | VARCHAR | UNIQUE, NOT NULL | User’s login email |
+| `password_hash` | VARCHAR | NOT NULL | Hashed password |
+| `phone_number` | VARCHAR | NULL | Optional phone number |
+| `role` | ENUM(`guest`, `host`, `admin`) | NOT NULL | Defines user role |
+| `created_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Account creation timestamp |
 
 ---
 
-### 3. **Booking**
-Tracks reservations made by users for specific properties.
+### 🏠 Property
 
-| Field | Type | Description |
-|-------|------|-------------|
-| booking_id | UUID (PK) | Unique booking ID |
-| property_id | UUID (FK → Property.property_id) | Property being booked |
-| user_id | UUID (FK → User.user_id) | User who made the booking |
-| start_date | DATE | Booking start date |
-| end_date | DATE | Booking end date |
-| total_price | DECIMAL | Total cost for the stay |
-| status | ENUM (pending, confirmed, canceled) | Booking status |
-| created_at | TIMESTAMP | When booking was created |
+**Description:**  
+Represents accommodation listings created by hosts.
 
----
-
-### 4. **Payment**
-Stores payment details related to bookings.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| payment_id | UUID (PK) | Unique payment ID |
-| booking_id | UUID (FK → Booking.booking_id) | Associated booking |
-| amount | DECIMAL | Amount paid |
-| payment_date | TIMESTAMP | Date of payment |
-| payment_method | ENUM (credit_card, paypal, stripe) | Method used for payment |
+| Field | Type | Constraints | Description |
+|--------|------|-------------|--------------|
+| `property_id` | UUID | Primary Key, Indexed | Unique property identifier |
+| `host_id` | UUID | Foreign Key → User(user_id) | Links property to host |
+| `name` | VARCHAR | NOT NULL | Property title |
+| `description` | TEXT | NOT NULL | Full description of the property |
+| `location` | VARCHAR | NOT NULL | Physical address or location |
+| `price_per_night` | DECIMAL | NOT NULL | Cost per night stay |
+| `created_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Date created |
+| `updated_at` | TIMESTAMP | ON UPDATE CURRENT_TIMESTAMP | Last update timestamp |
 
 ---
 
-### 5. **Review**
-Captures guest reviews and ratings for properties.
+### 📅 Booking
 
-| Field | Type | Description |
-|-------|------|-------------|
-| review_id | UUID (PK) | Unique review ID |
-| property_id | UUID (FK → Property.property_id) | Reviewed property |
-| user_id | UUID (FK → User.user_id) | Reviewer (guest) |
-| rating | INTEGER (1–5) | Rating value |
-| comment | TEXT | Review text |
-| created_at | TIMESTAMP | Review creation date |
+**Description:**  
+Represents reservations made by guests for properties.
 
----
-
-### 6. **Message**
-Stores communication between users (guest ↔ host).
-
-| Field | Type | Description |
-|-------|------|-------------|
-| message_id | UUID (PK) | Unique message ID |
-| sender_id | UUID (FK → User.user_id) | Message sender |
-| recipient_id | UUID (FK → User.user_id) | Message receiver |
-| message_body | TEXT | Content of the message |
-| sent_at | TIMESTAMP | Time message was sent |
+| Field | Type | Constraints | Description |
+|--------|------|-------------|--------------|
+| `booking_id` | UUID | Primary Key, Indexed | Unique booking identifier |
+| `property_id` | UUID | Foreign Key → Property(property_id) | The booked property |
+| `user_id` | UUID | Foreign Key → User(user_id) | Guest who made the booking |
+| `start_date` | DATE | NOT NULL | Check-in date |
+| `end_date` | DATE | NOT NULL | Check-out date |
+| `total_price` | DECIMAL | NOT NULL | Total cost for the stay |
+| `status` | ENUM(`pending`, `confirmed`, `canceled`) | NOT NULL | Booking status |
+| `created_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Booking creation time |
 
 ---
 
-## 🔗 Relationships Summary
+### 💳 Payment
 
-- A **User** (host) can list many **Properties**.  
-- A **User** (guest) can make multiple **Bookings**.  
-- Each **Booking** belongs to one **Property** and one **User**.  
-- Each **Booking** has one **Payment**.  
-- A **Property** can have multiple **Reviews**.  
-- A **User** can send and receive multiple **Messages**.
+**Description:**  
+Handles payments for bookings.
+
+| Field | Type | Constraints | Description |
+|--------|------|-------------|--------------|
+| `payment_id` | UUID | Primary Key, Indexed | Unique payment ID |
+| `booking_id` | UUID | Foreign Key → Booking(booking_id) | Related booking |
+| `amount` | DECIMAL | NOT NULL | Amount paid |
+| `payment_date` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Payment timestamp |
+| `payment_method` | ENUM(`credit_card`, `paypal`, `stripe`) | NOT NULL | Payment channel used |
 
 ---
 
-## ✅ Conclusion
+### 💬 Review
 
-This ERD serves as the foundation for implementing the Airbnb clone’s database.  
-It ensures data consistency, proper normalization, and efficient relationships among core entities.
+**Description:**  
+Represents guest feedback on properties after stays.
 
+| Field | Type | Constraints | Description |
+|--------|------|-------------|--------------|
+| `review_id` | UUID | Primary Key, Indexed | Unique review identifier |
+| `property_id` | UUID | Foreign Key → Property(property_id) | Reviewed property |
+| `user_id` | UUID | Foreign Key → User(user_id) | Reviewer (guest) |
+| `rating` | INTEGER | CHECK(rating >= 1 AND rating <= 5), NOT NULL | Star rating (1–5) |
+| `comment` | TEXT | NOT NULL | Review text |
+| `created_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Review creation timestamp |
+
+---
+
+### 💌 Message
+
+**Description:**  
+Stores messages exchanged between users (e.g., guest ↔ host).
+
+| Field | Type | Constraints | Description |
+|--------|------|-------------|--------------|
+| `message_id` | UUID | Primary Key, Indexed | Unique message identifier |
+| `sender_id` | UUID | Foreign Key → User(user_id) | User sending the message |
+| `recipient_id` | UUID | Foreign Key → User(user_id) | User receiving the message |
+| `message_body` | TEXT | NOT NULL | Content of the message |
+| `sent_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Message timestamp |
+
+---
+
+## 🔗 Relationships
+
+| Relationship | Type | Description |
+|---------------|------|-------------|
+| **User → Property** | 1 : N | A host can list multiple properties |
+| **User → Booking** | 1 : N | A guest can make multiple bookings |
+| **Property → Booking** | 1 : N | A property can have many bookings |
+| **Booking → Payment** | 1 : 1 | Each booking has one payment |
+| **Property → Review** | 1 : N | A property can have multiple reviews |
+| **User → Review** | 1 : N | A guest can write multiple reviews |
+| **User → Message (Sender)** | 1 : N | A user can send many messages |
+| **User → Message (Recipient)** | 1 : N | A user can receive many messages |
+
+---
+
+## 🧭 ER Diagram Layout (Suggested)
+
+To visualize:
+1. **User** at top-center — main entity.
+2. **Property** below User → linked via host_id.
+3. **Booking** connected between Property and User.
+4. **Payment** right side of Booking (1:1 relation).
+5. **Review** under Property (1:N).
+6. **Message** below User (two relations: sender and recipient).
+
+Use **Crow’s Foot Notation** for cardinalities (1, N, 1:1).
+
+---
+
+## ⚙️ Implementation Notes
+
+- Use `UUID` for all primary keys (scalable and unique across distributed systems).  
+- Apply **foreign key constraints** to enforce relational integrity.  
+- Add indexes on frequently searched columns (`email`, `property_id`, `booking_id`).  
+- Use **ENUMs** for role, status, and payment method to maintain data consistency.  
+- Add **timestamps** for auditing and historical tracking.
+
+---
+
+# Airbnb Database Entity-Relationship Diagram
+
+Below is the ERD illustrating the relationships between the key entities:  
+**User, Property, Booking, Payment, Review, and Message**.
+
+Diagram link: (https://app.diagrams.net/#G1PkhzeuCNkSLw8BqdR_CBuB7BzeKz2t4j#%7B%22pageId%22%3A%22yf9Qftj7pLVsSTz_qJ0F%22%7D)
+
+---
+
+### Entities Overview
+
+**User**
+- user_id (PK)
+- first_name
+- last_name
+- email
+- password_hash
+- role
+
+**Property**
+- property_id (PK)
+- host_id (FK → User.user_id)
+- name
+- description
+- price_per_night
+- location
+
+**Booking**
+- booking_id (PK)
+- property_id (FK → Property.property_id)
+- user_id (FK → User.user_id)
+- start_date
+- end_date
+- total_price
+
+**Payment**
+- payment_id (PK)
+- booking_id (FK → Booking.booking_id)
+- amount
+- payment_date
+- payment_method
+
+**Review**
+- review_id (PK)
+- property_id (FK → Property.property_id)
+- user_id (FK → User.user_id)
+- rating
+- comment
+
+**Message**
+- message_id (PK)
+- sender_id (FK → User.user_id)
+- recipient_id (FK → User.user_id)
+- message_body
+- sent_at
