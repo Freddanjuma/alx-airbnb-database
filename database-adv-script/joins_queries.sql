@@ -12,15 +12,15 @@ INNER JOIN users u
 
 
 -- Retrieve all properties with their reviews (if available)
-SELECT 
-    p.id AS property_id,
-    p.name AS property_name,
-    r.id AS review_id,
-    r.rating,
-    r.comment
-FROM properties p
-LEFT JOIN reviews r 
-    ON p.id = r.property_id;
+-- SELECT 
+    --p.id AS property_id,
+    --p.name AS property_name,
+    --r.id AS review_id,
+    --r.rating,
+    --r.comment
+--FROM properties p
+--LEFT JOIN reviews r 
+   -- ON p.id = r.property_id;
 
 
 -- Retrieve all users and all bookings (whether linked or not)
@@ -55,13 +55,14 @@ FROM users u
 RIGHT JOIN bookings b ON u.id = b.user_id;
 
 
--- Retrieve all properties with their reviews (if available)
+-- Retrieve all properties and their reviews, including those without reviews
 SELECT 
-    p.id AS property_id,
-    p.name AS property_name,
-    r.id AS review_id,
-    r.rating,
-    r.comment
-FROM properties p
-LEFT JOIN reviews r 
-    ON p.id = r.property_id;
+    properties.id AS property_id,
+    properties.name AS property_name,
+    reviews.id AS review_id,
+    reviews.rating,
+    reviews.comment
+FROM properties
+LEFT JOIN reviews
+    ON properties.id = reviews.property_id;
+
