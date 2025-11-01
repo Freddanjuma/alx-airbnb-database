@@ -1,48 +1,20 @@
-
--- =========================================
--- INITIAL QUERY: Retrieve all bookings with user, property, and payment details
--- =========================================
-
-SELECT 
-    bookings.id AS booking_id,
-    users.name AS user_name,
-    users.email AS user_email,
-    properties.name AS property_name,
-    properties.location AS property_location,
-    payments.amount AS payment_amount,
-    payments.status AS payment_status,
-    bookings.created_at AS booking_date
-FROM bookings
-JOIN users ON bookings.user_id = users.id
-JOIN properties ON bookings.property_id = properties.id
-JOIN payments ON bookings.payment_id = payments.id;
-
--- =========================================
--- EXPLAIN ANALYSIS OF INITIAL QUERY
--- =========================================
-EXPLAIN
-SELECT 
-    bookings.id AS booking_id,
-    users.name,
-    properties.name,
-    payments.amount
-FROM bookings
-JOIN users ON bookings.user_id = users.id
-JOIN properties ON bookings.property_id = properties.id
-JOIN payments ON bookings.payment_id = payments.id;
-
--- =========================================
--- OPTIMIZED QUERY (After performance analysis)
--- =========================================
-
+-- Initial query: Retrieve all bookings along with user, property, and payment details
 SELECT 
     b.id AS booking_id,
+    b.start_date,
+    b.end_date,
+    b.total_amount,
+    u.id AS user_id,
     u.name AS user_name,
+    u.email AS user_email,
+    p.id AS property_id,
     p.name AS property_name,
-    pay.amount,
-    pay.status
+    p.location AS property_location,
+    pay.id AS payment_id,
+    pay.amount AS payment_amount,
+    pay.status AS payment_status
 FROM bookings b
-INNER JOIN users u ON b.user_id = u.id
-INNER JOIN properties p ON b.property_id = p.id
-LEFT JOIN payments pay ON b.payment_id = pay.id
-WHERE b.created_at >= NOW() - INTERVAL '6 months';
+JOIN users u ON b.user_id = u.id
+JOIN properties p ON b.property_id = p.id
+JOIN payments pay ON b.payment_id = pay.id
+WHERE b.total_amount > 0 AND pay.status = 'completed';
